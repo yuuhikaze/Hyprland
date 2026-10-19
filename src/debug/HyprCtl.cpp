@@ -823,9 +823,10 @@ static std::string devicesRequest(eHyprCtlOutputFormat format, std::string reque
             result += std::format(
                 R"#(    {{
         "address": "0x{:x}",
-        "name": "{}"
+        "name": "{}",
+        "size": [{:.2f}, {:.2f}]
     }},)#",
-                rc<uintptr_t>(d.get()), escapeJSONStrings(d->m_hlName));
+                rc<uintptr_t>(d.get()), escapeJSONStrings(d->m_hlName), d->aq()->physicalSize.x, d->aq()->physicalSize.y);
         }
 
         for (auto const& d : g_pInputManager->m_tabletTools) {

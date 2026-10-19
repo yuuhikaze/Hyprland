@@ -1176,6 +1176,30 @@ SConfigOptionReply CConfigManager::getConfigValue(const std::string& val) {
         return {.dataptr = VAL->getDataStaticPtr(), .type = &VAL->getValue().type(), .setByUser = VAL->m_bSetByUser};
     }
 
+    // device[<name>]:<field>, mirroring the form `keyword` already accepts for
+    // setting, so a per-device option can be read back as well as written
+    constexpr std::string_view DEVICE_PREFIX = "device[";
+
+    if (val.starts_with(DEVICE_PREFIX)) {
+        const auto CLOSE = val.find("]:", DEVICE_PREFIX.length());
+
+        if (CLOSE == std::string::npos)
+            return {};
+
+        const auto NAME  = val.substr(DEVICE_PREFIX.length(), CLOSE - DEVICE_PREFIX.length());
+        const auto FIELD = val.substr(CLOSE + 2);
+
+        if (NAME.empty() || FIELD.empty())
+            return {};
+
+        const auto VAL = m_config->getSpecialConfigValuePtr("device", FIELD.c_str(), NAME.c_str());
+
+        if (!VAL)
+            return {};
+
+        return {.dataptr = VAL->getDataStaticPtr(), .type = &VAL->getValue().type(), .setByUser = VAL->m_bSetByUser};
+    }
+
     const auto VAL = m_config->getConfigValuePtr(val.c_str());
     if (!VAL)
         return {};
